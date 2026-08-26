@@ -1,0 +1,13 @@
+*.o
+agt
+
+result
+result-*
+
+.clangd/
+.cache/
+
+.direnv/
+
+compile_commands.json
+
