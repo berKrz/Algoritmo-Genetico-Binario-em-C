@@ -15,7 +15,7 @@ int fitness(int ind[IND]) {
 }
 
 void roleta(int pop[][IND]) {
-  int total = 0, n, fits[POP], aux[POP][IND];
+  int total = 0, fits[POP], aux[POP][IND];
 
   printf("Roleta\n");
 
@@ -29,16 +29,15 @@ void roleta(int pop[][IND]) {
   }
 
   for (int i = 0; i < POP; i++) {
-    n = rand() % total;
+    int n = rand() % total, cumulativo = 0;
 
-    if (n < fits[0]) {
-      copy_ind(pop[i], aux[0]);
-    } else if (n < fits[0]+fits[1]) {
-      copy_ind(pop[i], aux[1]);
-    } else if (n < fits[0]+fits[1]+fits[2]) {
-      copy_ind(pop[i], aux[2]);
-    } else {
-      copy_ind(pop[i], aux[3]);
+    for (int j = 0; j < POP; j++) {
+      cumulativo += fits[j];
+
+      if (n < cumulativo) {
+        copy_ind(pop[i], aux[j]);
+        break;
+      }
     }
   }
 
@@ -49,6 +48,7 @@ void crossover(int i1[], int i2[]) {
   int corte = (IND * 6) / 10;
 
   for (int i = corte; i < IND; i++) {
+    // XOR Swap Values without temporary variable trick
     i1[i] = i1[i] ^ i2[i];
     i2[i] = i2[i] ^ i1[i];
     i1[i] = i1[i] ^ i2[i];
