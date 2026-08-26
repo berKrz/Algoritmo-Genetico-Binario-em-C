@@ -1,5 +1,5 @@
 {
-  description = "C/C++ dev environment";
+  description = "Binary Genetic Algorithm in C";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
@@ -16,16 +16,16 @@
           gdb            # debugger
         ];
       };
-    };
 
-  packages.x86_64-linux.default = pkgs.stdenv.mkDerivation {
-    pname = "agt";
-    version = "0.1.0";
-    src = ./.;
-    buildPhase = "make";
-    install-phase = ''
-      mkdir -p $out/bin
-      cp agt $out/bin/
-    '';
-  };
+      packages.x86_64-linux.default = pkgs.stdenv.mkDerivation {
+        pname = "agt";
+        version = "0.1.0";
+        src = ./.;
+        buildPhase = "make";
+        installPhase = ''
+          mkdir -p $out/bin
+          cp agt $out/bin/
+        '';
+      };
+    };
 }

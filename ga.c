@@ -19,8 +19,6 @@ void roleta(int pop[][IND]) {
 
   printf("Roleta\n");
 
-  memcpy(aux, pop, sizeof(pop));
-
   for (int i = 0; i < POP; i++) {
     copy_ind(aux[i], pop[i]);
   }

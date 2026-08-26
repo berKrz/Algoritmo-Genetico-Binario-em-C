@@ -4,7 +4,7 @@
 #include "ga.h"
 #include "utils.h"
 
-int main() {
+int main(void) {
   srand(time(NULL));
   clear_screen();
 
@@ -19,6 +19,7 @@ int main() {
     wait_for_enter();
 
     crossover_pop(pop);
+    wait_for_enter();
   }
 
   return EXIT_SUCCESS;
