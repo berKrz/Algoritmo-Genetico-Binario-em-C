@@ -1,25 +1,11 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-
-#define POP 4
-#define IND 5
+#include "utils.h"
 
 void clear_screen(void) {
     printf("\033[2J\033[H");
     fflush(stdout);
 }
-
-int f(int ind[IND]) {
-   int n = 0;
- 
-   for (int i = 0; i < IND; i++) {
-     n += (ind[i] * (1 << i)) ;
-   }
-
-  return n * n;
- }
 
 void print_ind(int ind[IND]) {
   for (int i = IND-1; i > -1; i--) {
@@ -45,17 +31,4 @@ void init(int matriz[POP][IND]) {
       matriz[i][j] = rand() % 2;
     }
   }
-}
-
-int main(int argc, char *argv[])
-{
-  srand(time(NULL));
-  clear_screen();
-
-  int pop[POP][IND];
-  init(pop);
-
-  print_pop(pop);
-
-  return EXIT_SUCCESS;
 }
