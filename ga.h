@@ -1,9 +1,25 @@
 #pragma once
 
-#define POP 4
-#define IND 5
+typedef enum { MINIMIZE, MAXIMIZE } OptDirection;
 
-int fitness(int ind[IND]);
-void roleta(int pop[][IND]);
-void crossover(int i1[], int i2[]);
-void crossover_pop(int pop[][IND]);
+typedef struct {
+  int          pop_size;
+  int          ind_size;
+  int          generations;
+  float        cut_point_ratio;
+  OptDirection direction;
+
+  // Function Pointers
+  int (*fitness_fn) (int *ind);
+  void (*selection_fn)(int *pop);
+  void (*crossover_fn)(int *i1, int *i2);
+} Config;
+
+extern Config g_cfg;
+
+Config config_default(void);
+
+int  fitness_quadratic     (int *ind);
+void selection_roulette    (int *pop);
+void crossover_single_point(int *i1, int *i2);
+void crossover_pop         (int *pop);
