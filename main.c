@@ -1,11 +1,13 @@
 #include "ga.h"
 #include "utils.h"
+#include "args.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-int main(void) {
+int main(int argc, char **argv) {
   g_cfg = config_default();
+  parse_args(argc, argv);
 
   srand(time(NULL));
   clear_screen();
