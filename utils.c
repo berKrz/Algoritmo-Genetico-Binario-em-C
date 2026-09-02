@@ -35,6 +35,10 @@ void print_pares(int *pop) {
     printf("\nIndivíduo %d = ", i);
     print_ind(pop + i * g_cfg.ind_size);
     printf("fitness(%d) = %d", i, g_cfg.fitness_fn(pop + i * g_cfg.ind_size));
+
+    if (i == g_cfg.pop_size - 1) {
+      break;
+    }
     printf("\nIndivíduo %d = ", ++i);
     print_ind(pop + i * g_cfg.ind_size);
     printf("fitness(%d) = %d", i, g_cfg.fitness_fn(pop + i * g_cfg.ind_size));

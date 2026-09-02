@@ -73,7 +73,7 @@ void selection_roulette(int *pop) {
 
 void crossover_pop(int *pop) {
   int ind_size = g_cfg.ind_size;
-  for (int i = 0; i < g_cfg.pop_size; i += 2) {
+  for (int i = 0; i < (g_cfg.pop_size / 2) * 2; i += 2) {
     g_cfg.crossover_fn(pop + i * ind_size, pop + (i + 1) * ind_size);
   }
   printf("População Atual\n\n");
