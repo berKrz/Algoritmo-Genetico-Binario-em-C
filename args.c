@@ -122,7 +122,7 @@ void parse_args(int argc, char **argv) {
             break;
           }
         }
-        if (!found) die("Unknown --fitness value. Available: quadratic.");
+        if (!found) die("Unknown --fitness value. Available: quadratic and sphere.");
         break;
       }
       case 's': {

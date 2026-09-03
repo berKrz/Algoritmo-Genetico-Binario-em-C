@@ -154,13 +154,13 @@ void iter_pop(int *pop) {
 
 Config config_default(void) {
   return (Config){
-    .pop_size        = 4,
-    .ind_size        = 5,
-    .generations     = 10,
+    .pop_size        = 15,
+    .ind_size        = 22,
+    .generations     = 30,
     .tournament_size = 2,
     .cut_point_ratio = 0.6f,
-    .mutation_rate   = 0.0f,
-    .direction       = MAXIMIZE,
+    .mutation_rate   = 0.01f,
+    .direction       = MINIMIZE,
     .fitness_fn      = fitness_quadratic,
     .selection_fn    = selection_roulette,
     .crossover_fn    = crossover_single_point,

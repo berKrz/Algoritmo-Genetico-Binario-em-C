@@ -22,7 +22,7 @@ void print_pop(int *pop) {
   for (int i = 0; i < g_cfg.pop_size; i++) {
     printf("\nIndivíduo %d = ", i);
     print_ind(pop + i * g_cfg.ind_size);
-    printf("fitness(%d) = %d", i, g_cfg.fitness_fn(pop + i * g_cfg.ind_size));
+    printf("\nfitness(%d) = %d", i, g_cfg.fitness_fn(pop + i * g_cfg.ind_size));
     printf("\n");
   }
   printf("\n");
