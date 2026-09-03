@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     printf("\n\nIteração %d\n", i);
     g_cfg.selection_fn(pop);
     wait_for_enter();
-    crossover_pop(pop);
+    iter_pop(pop);
     wait_for_enter();
   }
 

@@ -13,6 +13,21 @@ int fitness_quadratic(int *ind) {
   return n * n;
 }
 
+static void mutation(int *ind, int index) {
+  for (int i = 0; i < g_cfg.ind_size; i++) {
+    int n = rand() % 100;
+    // RAND_MAX resolve erros por um (44.99999 vira 44)
+    if ((float)rand() / RAND_MAX < g_cfg.mutation_rate){
+      printf("\nMutação no indivíduo %d, bit %d\n", index,i);
+      print_ind(ind);
+      ind[i] = !ind[i];
+      printf("  ->  ");
+      print_ind(ind);
+      printf("\n");
+    }
+  }
+}
+
 void crossover_single_point(int *i1, int *i2) {
   int cut = (int)(g_cfg.ind_size * g_cfg.cut_point_ratio);
   for (int i = cut; i < g_cfg.ind_size; i++) {
@@ -71,10 +86,13 @@ void selection_roulette(int *pop) {
   print_pares(pop);
 }
 
-void crossover_pop(int *pop) {
+void iter_pop(int *pop) {
   int ind_size = g_cfg.ind_size;
-  for (int i = 0; i < (g_cfg.pop_size / 2) * 2; i += 2) {
-    g_cfg.crossover_fn(pop + i * ind_size, pop + (i + 1) * ind_size);
+  for (int i = 0; i < g_cfg.pop_size; i++) {
+    if (i != g_cfg.pop_size - 1 && i % 2 == 0) {
+      g_cfg.crossover_fn(pop + i * ind_size, pop + (i + 1) * ind_size);
+    }
+    mutation(pop + i * ind_size, i);
   }
   printf("População Atual\n\n");
   print_pop(pop);
@@ -86,6 +104,7 @@ Config config_default(void) {
     .ind_size        = 5,
     .generations     = 10,
     .cut_point_ratio = 0.6f,
+    .mutation_rate   = 0.0f,
     .direction       = MAXIMIZE,
     .fitness_fn      = fitness_quadratic,
     .selection_fn    = selection_roulette,

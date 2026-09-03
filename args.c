@@ -26,15 +26,16 @@ static CrossoverEntry crossover_table[] = {
 static void print_help(const char *prog) {
   printf("Usage: %s [OPTIONS]\n\n", prog);
   printf("Options:\n");
-  printf("  -p, --pop-size     INT    Population size (min: 2)            [default: 4]\n");
-  printf("  -i, --ind-size     INT    Individual size (min: 2)            [default: 5]\n");
-  printf("  -g, --generations  INT    Number of generations (min: 1)      [default: 10]\n");
-  printf("  -c, --cut-point    FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
-  printf("  -d, --direction    STR    minimize | maximize                 [default: maximize]\n");
-  printf("  -f, --fitness      STR    quadratic                           [default: quadratic]\n");
-  printf("  -s, --selection    STR    roulette                            [default: roulette]\n");
-  printf("  -x, --crossover    STR    single-point                        [default: single-point]\n");
-  printf("  -h, --help                Print this message and exit\n");
+  printf("  -p, --pop-size      INT    Population size (min: 2)            [default: 4]\n");
+  printf("  -i, --ind-size      INT    Individual size (min: 2)            [default: 5]\n");
+  printf("  -g, --generations   INT    Number of generations (min: 1)      [default: 10]\n");
+  printf("  -c, --cut-point     FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
+  printf("  -m, --mutation-rate FLOAT  Mutation ratio [0.0,1.0)            [default: 0.0]\n");
+  printf("  -d, --direction     STR    minimize | maximize                 [default: maximize]\n");
+  printf("  -f, --fitness       STR    quadratic                           [default: quadratic]\n");
+  printf("  -s, --selection     STR    roulette                            [default: roulette]\n");
+  printf("  -x, --crossover     STR    single-point                        [default: single-point]\n");
+  printf("  -h, --help                 Print this message and exit\n");
 }
 
 static void die(const char *msg) {
@@ -51,6 +52,7 @@ void parse_args(int argc, char **argv) {
     { "ind-size",    required_argument, NULL, 'i' },
     { "generations", required_argument, NULL, 'g' },
     { "cut-point",   required_argument, NULL, 'c' },
+    { "mutation-rate",    required_argument, NULL, 'm' },
     { "direction",   required_argument, NULL, 'd' },
     { "fitness",     required_argument, NULL, 'f' },
     { "selection",   required_argument, NULL, 's' },
@@ -60,7 +62,7 @@ void parse_args(int argc, char **argv) {
   };
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "p:i:g:c:d:f:s:x:h", long_opts, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "p:i:g:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
     switch (opt) {
       case 'p': {
         int v = atoi(optarg);
@@ -85,6 +87,13 @@ void parse_args(int argc, char **argv) {
         if (v <= 0.0f || v >= 1.0f)
           die("--cut-point must be in the open interval (0.0, 1.0).");
         g_cfg.cut_point_ratio = v;
+        break;
+      }
+      case 'm': {
+        float v = (float)atof(optarg);
+        if (v < 0.0f || v >= 1.0f)
+          die("--mutation-rate must be in the interval [0.0, 1.0).");
+        g_cfg.mutation_rate = v;
         break;
       }
       case 'd': {
