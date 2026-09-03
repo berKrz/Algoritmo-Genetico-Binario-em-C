@@ -12,6 +12,7 @@ typedef struct { const char *name; void (*fn)(int *, int *);} CrossoverEntry;
 
 static FitnessEntry fitness_table[] = {
   { "quadratic",    fitness_quadratic },
+  { "sphere",       fitness_sphere    },
 };
 
 static SelectionEntry selection_table[] = {

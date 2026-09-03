@@ -8,15 +8,29 @@ Config g_cfg;
 int fitness_quadratic(int *ind) {
   int n = 0;
   for (int i = 0; i < g_cfg.ind_size; i++) {
-      n += ind[i] * (1 << i);
+    // Base 2 -> Base 10
+    n += ind[i] * (1 << i);
   }
   return n * n;
 }
 
+static int recursive_sphere(int n) {
+  if (n == 1) return 1;
+  return n + recursive_sphere(n-1);
+}
+
+int fitness_sphere(int *ind) {
+  int n = 0;
+  for (int i = 0; i < g_cfg.ind_size; i++) {
+    // Base 2 -> Base 10
+    n += ind[i] * (1 << i);
+  }
+  return recursive_sphere(n);
+}
+
 static void mutation(int *ind, int index) {
   for (int i = 0; i < g_cfg.ind_size; i++) {
-    int n = rand() % 100;
-    // RAND_MAX resolve erros por um (44.99999 vira 44)
+    // Número aleatório sem erros por um
     if ((float)rand() / RAND_MAX < g_cfg.mutation_rate){
       printf("\nMutação no indivíduo %d, bit %d\n", index,i);
       print_ind(ind);

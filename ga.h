@@ -21,6 +21,8 @@ extern Config g_cfg;
 Config config_default(void);
 
 int  fitness_quadratic     (int *ind);
+int  fitness_sphere        (int *ind);
+
 void selection_roulette    (int *pop);
 void crossover_single_point(int *i1, int *i2);
 void iter_pop              (int *pop);
