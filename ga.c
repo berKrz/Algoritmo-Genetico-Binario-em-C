@@ -100,6 +100,46 @@ void selection_roulette(int *pop) {
   print_pares(pop);
 }
 
+void selection_tournament(int *pop) {
+  int pop_size = g_cfg.pop_size;
+  int ind_size = g_cfg.ind_size;
+  int k = g_cfg.tournament_size;
+
+  int *fits = malloc(pop_size * sizeof(int));
+  int *aux  = malloc(pop_size * ind_size * sizeof(int));
+
+  printf("Torneio\n");
+
+  for (int i = 0; i < pop_size; i++) {
+    copy_ind(aux + i * ind_size, pop + i * ind_size);
+    fits[i] = g_cfg.fitness_fn(pop + i * ind_size);
+  }
+  
+  for (int i = 0; i < pop_size; i++) {
+    int best_fit = rand() % pop_size;
+
+    for (int j = 1; j < k; j++) {
+      int n = rand() % pop_size;
+
+      if (g_cfg.direction == MAXIMIZE) {
+        if (fits[n] > fits[best_fit]) {
+          best_fit = n;
+        }
+      } else {
+        if (fits[n] < fits[best_fit]) {
+          best_fit = n;
+        }
+      }
+    }
+    copy_ind(pop + i * ind_size, aux + best_fit * ind_size);
+  }
+
+  free(fits);
+  free(aux);
+
+  print_pares(pop);
+}
+
 void iter_pop(int *pop) {
   int ind_size = g_cfg.ind_size;
   for (int i = 0; i < g_cfg.pop_size; i++) {
@@ -117,6 +157,7 @@ Config config_default(void) {
     .pop_size        = 4,
     .ind_size        = 5,
     .generations     = 10,
+    .tournament_size = 2,
     .cut_point_ratio = 0.6f,
     .mutation_rate   = 0.0f,
     .direction       = MAXIMIZE,

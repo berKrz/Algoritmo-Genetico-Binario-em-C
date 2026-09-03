@@ -16,7 +16,8 @@ static FitnessEntry fitness_table[] = {
 };
 
 static SelectionEntry selection_table[] = {
-  { "roulette",     selection_roulette },
+  { "roulette",     selection_roulette   },
+  { "tournament",   selection_tournament },
 };
 
 static CrossoverEntry crossover_table[] = {
@@ -27,16 +28,17 @@ static CrossoverEntry crossover_table[] = {
 static void print_help(const char *prog) {
   printf("Usage: %s [OPTIONS]\n\n", prog);
   printf("Options:\n");
-  printf("  -p, --pop-size      INT    Population size (min: 2)            [default: 4]\n");
-  printf("  -i, --ind-size      INT    Individual size (min: 2)            [default: 5]\n");
-  printf("  -g, --generations   INT    Number of generations (min: 1)      [default: 10]\n");
-  printf("  -c, --cut-point     FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
-  printf("  -m, --mutation-rate FLOAT  Mutation ratio [0.0,1.0)            [default: 0.0]\n");
-  printf("  -d, --direction     STR    minimize | maximize                 [default: maximize]\n");
-  printf("  -f, --fitness       STR    quadratic                           [default: quadratic]\n");
-  printf("  -s, --selection     STR    roulette                            [default: roulette]\n");
-  printf("  -x, --crossover     STR    single-point                        [default: single-point]\n");
-  printf("  -h, --help                 Print this message and exit\n");
+  printf("  -p, --pop-size          INT    Population size (min: 2)            [default: 4]\n");
+  printf("  -i, --ind-size          INT    Individual size (min: 2)            [default: 5]\n");
+  printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 10]\n");
+  printf("  -k, --tournament-size   INT    Number of individuals (min: 2)      [default: 2]\n");
+  printf("  -c, --cut-point         FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
+  printf("  -m, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.0]\n");
+  printf("  -d, --direction         STR    minimize | maximize                 [default: maximize]\n");
+  printf("  -f, --fitness           STR    quadratic                           [default: quadratic]\n");
+  printf("  -s, --selection         STR    roulette | tournament               [default: roulette]\n");
+  printf("  -x, --crossover         STR    single-point                        [default: single-point]\n");
+  printf("  -h, --help                     Print this message and exit\n");
 }
 
 static void die(const char *msg) {
@@ -49,21 +51,22 @@ static void die(const char *msg) {
 
 void parse_args(int argc, char **argv) {
   static const struct option long_opts[] = {
-    { "pop-size",    required_argument, NULL, 'p' },
-    { "ind-size",    required_argument, NULL, 'i' },
-    { "generations", required_argument, NULL, 'g' },
-    { "cut-point",   required_argument, NULL, 'c' },
-    { "mutation-rate",    required_argument, NULL, 'm' },
-    { "direction",   required_argument, NULL, 'd' },
-    { "fitness",     required_argument, NULL, 'f' },
-    { "selection",   required_argument, NULL, 's' },
-    { "crossover",   required_argument, NULL, 'x' },
-    { "help",        no_argument,       NULL, 'h' },
-    { NULL,          0,                 NULL,  0  }
+    { "pop-size",        required_argument, NULL, 'p' },
+    { "ind-size",        required_argument, NULL, 'i' },
+    { "generations",     required_argument, NULL, 'g' },
+    { "tournament-size", required_argument, NULL, 'k' },
+    { "cut-point",       required_argument, NULL, 'c' },
+    { "mutation-rate",   required_argument, NULL, 'm' },
+    { "direction",       required_argument, NULL, 'd' },
+    { "fitness",         required_argument, NULL, 'f' },
+    { "selection",       required_argument, NULL, 's' },
+    { "crossover",       required_argument, NULL, 'x' },
+    { "help",            no_argument,       NULL, 'h' },
+    { NULL,              0,                 NULL,  0  }
   };
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "p:i:g:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "p:i:g:k:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
     switch (opt) {
       case 'p': {
         int v = atoi(optarg);
@@ -81,6 +84,12 @@ void parse_args(int argc, char **argv) {
         int v = atoi(optarg);
         if (v < 1) die("--generations must be at least 1.");
         g_cfg.generations = v;
+        break;
+      }
+      case 'k': {
+        int v = atoi(optarg);
+        if (v < 2) die("--tournament-size must be at least 2.");
+        g_cfg.tournament_size = v;
         break;
       }
       case 'c': {
@@ -126,7 +135,7 @@ void parse_args(int argc, char **argv) {
             break;
           }
         }
-        if (!found) die("Unknown --selection value. Available: roulette.");
+        if (!found) die("Unknown --selection value. Available: roulette and tournament.");
         break;
       }
       case 'x': {
@@ -149,5 +158,11 @@ void parse_args(int argc, char **argv) {
         fprintf(stderr, "Run with --help for usage.\n");
         exit(EXIT_FAILURE);
     }
+  }
+  if (g_cfg.tournament_size > g_cfg.pop_size) {
+    char msg[128];
+    snprintf(msg, sizeof(msg), "--tournament-size must be at most the pop_size (pop_size=%d)",
+             g_cfg.pop_size);
+    die(msg);
   }
 }
