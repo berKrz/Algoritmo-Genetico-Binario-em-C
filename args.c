@@ -6,13 +6,12 @@
 #include <getopt.h>
 
 // Lookup Tables
-typedef struct { const char *name; int  (*fn)(int *);       } FitnessEntry;
+typedef struct { const char *name; double (*fn)(double);    } FitnessEntry;
 typedef struct { const char *name; void (*fn)(int *);       } SelectionEntry;
 typedef struct { const char *name; void (*fn)(int *, int *);} CrossoverEntry;
 
 static FitnessEntry fitness_table[] = {
   { "quadratic",    fitness_quadratic },
-  { "sphere",       fitness_sphere    },
 };
 
 static SelectionEntry selection_table[] = {
@@ -28,16 +27,18 @@ static CrossoverEntry crossover_table[] = {
 static void print_help(const char *prog) {
   printf("Usage: %s [OPTIONS]\n\n", prog);
   printf("Options:\n");
-  printf("  -p, --pop-size          INT    Population size (min: 2)            [default: 4]\n");
-  printf("  -i, --ind-size          INT    Individual size (min: 2)            [default: 5]\n");
-  printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 10]\n");
+  printf("  -p, --pop-size          INT    Population size (min: 2)            [default: 15]\n");
+  printf("  -i, --ind-size          INT    Individual size (min: 2)            [default: 22]\n");
+  printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 30]\n");
   printf("  -k, --tournament-size   INT    Number of individuals (min: 2)      [default: 2]\n");
   printf("  -c, --cut-point         FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
-  printf("  -m, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.0]\n");
-  printf("  -d, --direction         STR    minimize | maximize                 [default: maximize]\n");
+  printf("  -m, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.01]\n");
+  printf("  -d, --direction         STR    minimize | maximize                 [default: minimize]\n");
   printf("  -f, --fitness           STR    quadratic                           [default: quadratic]\n");
   printf("  -s, --selection         STR    roulette | tournament               [default: roulette]\n");
   printf("  -x, --crossover         STR    single-point                        [default: single-point]\n");
+  printf("      --domain-min        FLOAT  Domain minimum value                [default: 0.0]\n");
+  printf("      --domain-max        FLOAT  Domain maximum value                [default: 2^ind-size - 1]\n");
   printf("  -h, --help                     Print this message and exit\n");
 }
 
@@ -51,19 +52,23 @@ static void die(const char *msg) {
 
 void parse_args(int argc, char **argv) {
   static const struct option long_opts[] = {
-    { "pop-size",        required_argument, NULL, 'p' },
-    { "ind-size",        required_argument, NULL, 'i' },
-    { "generations",     required_argument, NULL, 'g' },
-    { "tournament-size", required_argument, NULL, 'k' },
-    { "cut-point",       required_argument, NULL, 'c' },
-    { "mutation-rate",   required_argument, NULL, 'm' },
-    { "direction",       required_argument, NULL, 'd' },
-    { "fitness",         required_argument, NULL, 'f' },
-    { "selection",       required_argument, NULL, 's' },
-    { "crossover",       required_argument, NULL, 'x' },
-    { "help",            no_argument,       NULL, 'h' },
-    { NULL,              0,                 NULL,  0  }
+    { "pop-size",        required_argument, NULL, 'p'  },
+    { "ind-size",        required_argument, NULL, 'i'  },
+    { "generations",     required_argument, NULL, 'g'  },
+    { "tournament-size", required_argument, NULL, 'k'  },
+    { "cut-point",       required_argument, NULL, 'c'  },
+    { "mutation-rate",   required_argument, NULL, 'm'  },
+    { "direction",       required_argument, NULL, 'd'  },
+    { "fitness",         required_argument, NULL, 'f'  },
+    { "selection",       required_argument, NULL, 's'  },
+    { "crossover",       required_argument, NULL, 'x'  },
+    { "domain-min",      required_argument, NULL, 1000 },
+    { "domain-max",      required_argument, NULL, 1001 },
+    { "help",            no_argument,       NULL, 'h'  },
+    { NULL,              0,                 NULL,  0   }
   };
+
+  int domain_max_explicit = 0;
 
   int opt;
   while ((opt = getopt_long(argc, argv, "p:i:g:k:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
@@ -122,7 +127,7 @@ void parse_args(int argc, char **argv) {
             break;
           }
         }
-        if (!found) die("Unknown --fitness value. Available: quadratic and sphere.");
+        if (!found) die("Unknown --fitness value. Available: quadratic.");
         break;
       }
       case 's': {
@@ -151,6 +156,15 @@ void parse_args(int argc, char **argv) {
         if (!found) die("Unknown --crossover value. Available: single-point.");
         break;
       }
+      case 1000: {
+        g_cfg.domain_min = atof(optarg);
+        break;
+      }
+      case 1001: {
+        g_cfg.domain_max = atof(optarg);
+        domain_max_explicit = 1;
+        break;
+      }
       case 'h':
         print_help(argv[0]);
         exit(EXIT_SUCCESS);
@@ -159,9 +173,17 @@ void parse_args(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
   }
+
+  if (!domain_max_explicit)
+    // Unsigned long shift avoids signed integer overflow
+    g_cfg.domain_max = (double)((1UL << g_cfg.ind_size) - 1UL);
+
+  if (g_cfg.domain_min >= g_cfg.domain_max)
+    die("--domain-min must be strictly less than --domain-max.");
+
   if (g_cfg.tournament_size > g_cfg.pop_size) {
     char msg[128];
-    snprintf(msg, sizeof(msg), "--tournament-size must be at most the pop_size (pop_size=%d)",
+    snprintf(msg, sizeof(msg), "--tournament-size must be at most pop-size (pop-size=%d)",
              g_cfg.pop_size);
     die(msg);
   }

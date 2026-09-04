@@ -5,34 +5,24 @@
 
 Config g_cfg;
 
-int fitness_quadratic(int *ind) {
+double decode_linear(int *ind) {
   int n = 0;
   for (int i = 0; i < g_cfg.ind_size; i++) {
-    // Base 2 -> Base 10
     n += ind[i] * (1 << i);
   }
-  return n * n;
+  // Unsigned long shift avoids signed integer overflow
+  double max_n = (double)((1UL << g_cfg.ind_size) - 1UL);
+  return g_cfg.domain_min + n * (g_cfg.domain_max - g_cfg.domain_min) / max_n;
 }
 
-static int recursive_sphere(int n) {
-  if (n == 1) return 1;
-  return n + recursive_sphere(n-1);
-}
-
-int fitness_sphere(int *ind) {
-  int n = 0;
-  for (int i = 0; i < g_cfg.ind_size; i++) {
-    // Base 2 -> Base 10
-    n += ind[i] * (1 << i);
-  }
-  return recursive_sphere(n);
+double fitness_quadratic(double x) {
+  return x * x;
 }
 
 static void mutation(int *ind, int index) {
   for (int i = 0; i < g_cfg.ind_size; i++) {
-    // Número aleatório sem erros por um
-    if ((float)rand() / RAND_MAX < g_cfg.mutation_rate){
-      printf("\nMutação no indivíduo %d, bit %d\n", index,i);
+    if ((float)rand() / RAND_MAX < g_cfg.mutation_rate) {
+      printf("\nMutação no indivíduo %d, bit %d\n", index, i);
       print_ind(ind);
       ind[i] = !ind[i];
       printf("  ->  ");
@@ -56,38 +46,40 @@ void selection_roulette(int *pop) {
   int pop_size = g_cfg.pop_size;
   int ind_size = g_cfg.ind_size;
 
-  int *fits = malloc(pop_size * sizeof(int));
-  int *aux  = malloc(pop_size * ind_size * sizeof(int));
+  double *fits = malloc(pop_size * sizeof(double));
+  int    *aux  = malloc(pop_size * ind_size * sizeof(int));
 
   printf("Roleta\n");
 
   for (int i = 0; i < pop_size; i++) {
     copy_ind(aux + i * ind_size, pop + i * ind_size);
-    fits[i] = g_cfg.fitness_fn(pop + i * ind_size);
+    fits[i] = g_cfg.fitness_fn(g_cfg.decode_fn(pop + i * ind_size));
   }
 
-  int total = 0;
+  double total = 0.0;
 
   if (g_cfg.direction == MAXIMIZE) {
     for (int i = 0; i < pop_size; i++) {
-        total += fits[i];
+      total += fits[i];
     }
   } else {
-    int max_fit = fits[0];
+    double max_fit = fits[0];
     for (int i = 1; i < pop_size; i++) {
-        if (fits[i] > max_fit) max_fit = fits[i];
+      if (fits[i] > max_fit) max_fit = fits[i];
     }
     for (int i = 0; i < pop_size; i++) {
-        fits[i] = max_fit - fits[i] + 1;
-        total += fits[i];
+      fits[i] = max_fit - fits[i] + 1.0;
+      total += fits[i];
     }
   }
 
   for (int i = 0; i < pop_size; i++) {
-    int n = rand() % total, cumulative = 0;
+    // Floating-point cumulative draw replaces rand() % total
+    double r = ((double)rand() / RAND_MAX) * total;
+    double cumulative = 0.0;
     for (int j = 0; j < pop_size; j++) {
       cumulative += fits[j];
-      if (n < cumulative) {
+      if (r <= cumulative) {
         copy_ind(pop + i * ind_size, aux + j * ind_size);
         break;
       }
@@ -105,33 +97,29 @@ void selection_tournament(int *pop) {
   int ind_size = g_cfg.ind_size;
   int k = g_cfg.tournament_size;
 
-  int *fits = malloc(pop_size * sizeof(int));
-  int *aux  = malloc(pop_size * ind_size * sizeof(int));
+  double *fits = malloc(pop_size * sizeof(double));
+  int    *aux  = malloc(pop_size * ind_size * sizeof(int));
 
   printf("Torneio\n");
 
   for (int i = 0; i < pop_size; i++) {
     copy_ind(aux + i * ind_size, pop + i * ind_size);
-    fits[i] = g_cfg.fitness_fn(pop + i * ind_size);
+    fits[i] = g_cfg.fitness_fn(g_cfg.decode_fn(pop + i * ind_size));
   }
-  
+
   for (int i = 0; i < pop_size; i++) {
-    int best_fit = rand() % pop_size;
+    int winner = rand() % pop_size;
 
     for (int j = 1; j < k; j++) {
-      int n = rand() % pop_size;
+      int challenger = rand() % pop_size;
 
       if (g_cfg.direction == MAXIMIZE) {
-        if (fits[n] > fits[best_fit]) {
-          best_fit = n;
-        }
+        if (fits[challenger] > fits[winner]) winner = challenger;
       } else {
-        if (fits[n] < fits[best_fit]) {
-          best_fit = n;
-        }
+        if (fits[challenger] < fits[winner]) winner = challenger;
       }
     }
-    copy_ind(pop + i * ind_size, aux + best_fit * ind_size);
+    copy_ind(pop + i * ind_size, aux + winner * ind_size);
   }
 
   free(fits);
@@ -160,7 +148,9 @@ Config config_default(void) {
     .tournament_size = 2,
     .cut_point_ratio = 0.6f,
     .mutation_rate   = 0.01f,
+    .domain_min      = 0.0,
     .direction       = MINIMIZE,
+    .decode_fn       = decode_linear,
     .fitness_fn      = fitness_quadratic,
     .selection_fn    = selection_roulette,
     .crossover_fn    = crossover_single_point,
