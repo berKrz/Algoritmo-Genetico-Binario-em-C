@@ -1,32 +1,17 @@
 #include "args.h"
 #include "ga.h"
+#include "config.h"
+#include "ini.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 
-// Lookup Tables
-typedef struct { const char *name; double (*fn)(double);    } FitnessEntry;
-typedef struct { const char *name; void (*fn)(int *);       } SelectionEntry;
-typedef struct { const char *name; void (*fn)(int *, int *);} CrossoverEntry;
-
-static FitnessEntry fitness_table[] = {
-  { "quadratic",    fitness_quadratic },
-};
-
-static SelectionEntry selection_table[] = {
-  { "roulette",     selection_roulette   },
-  { "tournament",   selection_tournament },
-};
-
-static CrossoverEntry crossover_table[] = {
-  { "single-point", crossover_single_point },
-};
-
-// Helpers
 static void print_help(const char *prog) {
   printf("Usage: %s [OPTIONS]\n\n", prog);
   printf("Options:\n");
+  printf("  -F, --config            FILE   Path to INI config file\n");
   printf("  -p, --pop-size          INT    Population size (min: 2)            [default: 15]\n");
   printf("  -i, --ind-size          INT    Individual size (min: 2)            [default: 22]\n");
   printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 30]\n");
@@ -42,16 +27,9 @@ static void print_help(const char *prog) {
   printf("  -h, --help                     Print this message and exit\n");
 }
 
-static void die(const char *msg) {
-  fprintf(stderr, "Error: %s\n", msg);
-  fprintf(stderr, "Run with --help for usage.\n");
-  exit(EXIT_FAILURE);
-}
-
-/* --- parse_args --- */
-
 void parse_args(int argc, char **argv) {
   static const struct option long_opts[] = {
+    { "config",          required_argument, NULL, 'F'  },
     { "pop-size",        required_argument, NULL, 'p'  },
     { "ind-size",        required_argument, NULL, 'i'  },
     { "generations",     required_argument, NULL, 'g'  },
@@ -68,103 +46,33 @@ void parse_args(int argc, char **argv) {
     { NULL,              0,                 NULL,  0   }
   };
 
-  int domain_max_explicit = 0;
+  Config aux_cfg = {0};
+
+  struct {
+    int pop_size, ind_size, generations, tournament_size;
+    int cut_point, mutation_rate, direction;
+    int fitness, selection, crossover;
+    int domain_min, domain_max;
+  } set = {0};
+
+  const char *config_path = NULL;
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "p:i:g:k:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "F:p:i:g:k:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
     switch (opt) {
-      case 'p': {
-        int v = atoi(optarg);
-        if (v < 2) die("--pop-size must be at least 2.");
-        g_cfg.pop_size = v;
-        break;
-      }
-      case 'i': {
-        int v = atoi(optarg);
-        if (v < 2) die("--ind-size must be at least 2.");
-        g_cfg.ind_size = v;
-        break;
-      }
-      case 'g': {
-        int v = atoi(optarg);
-        if (v < 1) die("--generations must be at least 1.");
-        g_cfg.generations = v;
-        break;
-      }
-      case 'k': {
-        int v = atoi(optarg);
-        if (v < 2) die("--tournament-size must be at least 2.");
-        g_cfg.tournament_size = v;
-        break;
-      }
-      case 'c': {
-        float v = (float)atof(optarg);
-        if (v <= 0.0f || v >= 1.0f)
-          die("--cut-point must be in the open interval (0.0, 1.0).");
-        g_cfg.cut_point_ratio = v;
-        break;
-      }
-      case 'm': {
-        float v = (float)atof(optarg);
-        if (v < 0.0f || v >= 1.0f)
-          die("--mutation-rate must be in the interval [0.0, 1.0).");
-        g_cfg.mutation_rate = v;
-        break;
-      }
-      case 'd': {
-        if      (strcmp(optarg, "minimize") == 0) g_cfg.direction = MINIMIZE;
-        else if (strcmp(optarg, "maximize") == 0) g_cfg.direction = MAXIMIZE;
-        else    die("--direction must be 'minimize' or 'maximize'.");
-        break;
-      }
-      case 'f': {
-        size_t n = sizeof(fitness_table) / sizeof(fitness_table[0]);
-        int found = 0;
-        for (size_t j = 0; j < n; j++) {
-          if (strcmp(optarg, fitness_table[j].name) == 0) {
-            g_cfg.fitness_fn = fitness_table[j].fn;
-            found = 1;
-            break;
-          }
-        }
-        if (!found) die("Unknown --fitness value. Available: quadratic.");
-        break;
-      }
-      case 's': {
-        size_t n = sizeof(selection_table) / sizeof(selection_table[0]);
-        int found = 0;
-        for (size_t j = 0; j < n; j++) {
-          if (strcmp(optarg, selection_table[j].name) == 0) {
-            g_cfg.selection_fn = selection_table[j].fn;
-            found = 1;
-            break;
-          }
-        }
-        if (!found) die("Unknown --selection value. Available: roulette and tournament.");
-        break;
-      }
-      case 'x': {
-        size_t n = sizeof(crossover_table) / sizeof(crossover_table[0]);
-        int found = 0;
-        for (size_t j = 0; j < n; j++) {
-          if (strcmp(optarg, crossover_table[j].name) == 0) {
-            g_cfg.crossover_fn = crossover_table[j].fn;
-            found = 1;
-            break;
-          }
-        }
-        if (!found) die("Unknown --crossover value. Available: single-point.");
-        break;
-      }
-      case 1000: {
-        g_cfg.domain_min = atof(optarg);
-        break;
-      }
-      case 1001: {
-        g_cfg.domain_max = atof(optarg);
-        domain_max_explicit = 1;
-        break;
-      }
+      case 'F': config_path = optarg;                                                    break;
+      case 'p': apply_field("pop_size",        optarg, &aux_cfg, "CLI"); set.pop_size        = 1; break;
+      case 'i': apply_field("ind_size",        optarg, &aux_cfg, "CLI"); set.ind_size        = 1; break;
+      case 'g': apply_field("generations",     optarg, &aux_cfg, "CLI"); set.generations     = 1; break;
+      case 'k': apply_field("tournament_size", optarg, &aux_cfg, "CLI"); set.tournament_size = 1; break;
+      case 'c': apply_field("cut_point",       optarg, &aux_cfg, "CLI"); set.cut_point       = 1; break;
+      case 'm': apply_field("mutation_rate",   optarg, &aux_cfg, "CLI"); set.mutation_rate   = 1; break;
+      case 'd': apply_field("direction",       optarg, &aux_cfg, "CLI"); set.direction       = 1; break;
+      case 'f': apply_field("fitness",         optarg, &aux_cfg, "CLI"); set.fitness         = 1; break;
+      case 's': apply_field("selection",       optarg, &aux_cfg, "CLI"); set.selection       = 1; break;
+      case 'x': apply_field("crossover",       optarg, &aux_cfg, "CLI"); set.crossover       = 1; break;
+      case 1000: apply_field("domain_min",     optarg, &aux_cfg, "CLI"); set.domain_min      = 1; break;
+      case 1001: apply_field("domain_max",     optarg, &aux_cfg, "CLI"); set.domain_max      = 1; break;
       case 'h':
         print_help(argv[0]);
         exit(EXIT_SUCCESS);
@@ -174,16 +82,36 @@ void parse_args(int argc, char **argv) {
     }
   }
 
-  if (!domain_max_explicit)
+  // Parse config file into g_cfg before applying CLI overrides
+  if (config_path) parse_ini(config_path, &g_cfg);
+
+  // Apply CLI values over any file-provided values
+  if (set.pop_size)        g_cfg.pop_size        = aux_cfg.pop_size;
+  if (set.ind_size)        g_cfg.ind_size        = aux_cfg.ind_size;
+  if (set.generations)     g_cfg.generations     = aux_cfg.generations;
+  if (set.tournament_size) g_cfg.tournament_size = aux_cfg.tournament_size;
+  if (set.cut_point)       g_cfg.cut_point_ratio = aux_cfg.cut_point_ratio;
+  if (set.mutation_rate)   g_cfg.mutation_rate   = aux_cfg.mutation_rate;
+  if (set.direction)       g_cfg.direction       = aux_cfg.direction;
+  if (set.fitness)         g_cfg.fitness_fn      = aux_cfg.fitness_fn;
+  if (set.selection)       g_cfg.selection_fn    = aux_cfg.selection_fn;
+  if (set.crossover)       g_cfg.crossover_fn    = aux_cfg.crossover_fn;
+  if (set.domain_min)      g_cfg.domain_min      = aux_cfg.domain_min;
+  if (set.domain_max)      g_cfg.domain_max      = aux_cfg.domain_max;
+
+  // Resolve domain_max default if not set by any source
+  if (!config_domain_max_was_set())
     // Unsigned long shift avoids signed integer overflow
     g_cfg.domain_max = (double)((1UL << g_cfg.ind_size) - 1UL);
 
+  // Cross-field validation
   if (g_cfg.domain_min >= g_cfg.domain_max)
     die("--domain-min must be strictly less than --domain-max.");
 
   if (g_cfg.tournament_size > g_cfg.pop_size) {
     char msg[128];
-    snprintf(msg, sizeof(msg), "--tournament-size must be at most pop-size (pop-size=%d)",
+    snprintf(msg, sizeof(msg),
+             "--tournament-size must be at most pop-size (pop-size=%d)",
              g_cfg.pop_size);
     die(msg);
   }

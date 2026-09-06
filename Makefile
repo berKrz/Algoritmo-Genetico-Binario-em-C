@@ -2,7 +2,7 @@ CC      = gcc
 CFLAGS  = -Wall -Wextra -std=c11 -g
 
 TARGET  = agt
-SRC     = main.c ga.c utils.c args.c
+SRC     = main.c ga.c utils.c args.c ini.c config.c
 OBJ     = $(SRC:.c=.o)
 
 all: $(TARGET)

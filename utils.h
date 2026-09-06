@@ -2,6 +2,9 @@
 
 #include "ga.h"
 
+void die    (const char *msg);
+void die_at (const char *source, const char *key, const char *msg);
+
 void clear_screen(void);
 void wait_for_enter(void);
 void print_ind  (int *ind);
