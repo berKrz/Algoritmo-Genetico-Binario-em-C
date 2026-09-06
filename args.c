@@ -17,13 +17,13 @@ static void print_help(const char *prog) {
   printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 30]\n");
   printf("  -k, --tournament-size   INT    Number of individuals (min: 2)      [default: 2]\n");
   printf("  -c, --cut-point         FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
-  printf("  -m, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.01]\n");
+  printf("  -r, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.01]\n");
   printf("  -d, --direction         STR    minimize | maximize                 [default: minimize]\n");
   printf("  -f, --fitness           STR    quadratic                           [default: quadratic]\n");
   printf("  -s, --selection         STR    roulette | tournament               [default: roulette]\n");
   printf("  -x, --crossover         STR    single-point                        [default: single-point]\n");
-  printf("      --domain-min        FLOAT  Domain minimum value                [default: 0.0]\n");
-  printf("      --domain-max        FLOAT  Domain maximum value                [default: 2^ind-size - 1]\n");
+  printf("  -m  --domain-min        FLOAT  Domain minimum value                [default: 0.0]\n");
+  printf("  -M  --domain-max        FLOAT  Domain maximum value                [default: 2^ind-size - 1]\n");
   printf("  -h, --help                     Print this message and exit\n");
 }
 
@@ -35,13 +35,13 @@ void parse_args(int argc, char **argv) {
     { "generations",     required_argument, NULL, 'g'  },
     { "tournament-size", required_argument, NULL, 'k'  },
     { "cut-point",       required_argument, NULL, 'c'  },
-    { "mutation-rate",   required_argument, NULL, 'm'  },
+    { "mutation-rate",   required_argument, NULL, 'r'  },
     { "direction",       required_argument, NULL, 'd'  },
     { "fitness",         required_argument, NULL, 'f'  },
     { "selection",       required_argument, NULL, 's'  },
     { "crossover",       required_argument, NULL, 'x'  },
-    { "domain-min",      required_argument, NULL, 1000 },
-    { "domain-max",      required_argument, NULL, 1001 },
+    { "domain-min",      required_argument, NULL, 'm'  },
+    { "domain-max",      required_argument, NULL, 'M'  },
     { "help",            no_argument,       NULL, 'h'  },
     { NULL,              0,                 NULL,  0   }
   };
@@ -58,7 +58,7 @@ void parse_args(int argc, char **argv) {
   const char *config_path = NULL;
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "F:p:i:g:k:c:m:d:f:s:x:h", long_opts, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "F:p:i:g:k:c:r:d:f:s:x:m:M:h", long_opts, NULL)) != -1) {
     switch (opt) {
       case 'F': config_path = optarg;                                                    break;
       case 'p': apply_field("pop_size",        optarg, &aux_cfg, "CLI"); set.pop_size        = 1; break;
@@ -66,13 +66,13 @@ void parse_args(int argc, char **argv) {
       case 'g': apply_field("generations",     optarg, &aux_cfg, "CLI"); set.generations     = 1; break;
       case 'k': apply_field("tournament_size", optarg, &aux_cfg, "CLI"); set.tournament_size = 1; break;
       case 'c': apply_field("cut_point",       optarg, &aux_cfg, "CLI"); set.cut_point       = 1; break;
-      case 'm': apply_field("mutation_rate",   optarg, &aux_cfg, "CLI"); set.mutation_rate   = 1; break;
+      case 'r': apply_field("mutation_rate",   optarg, &aux_cfg, "CLI"); set.mutation_rate   = 1; break;
       case 'd': apply_field("direction",       optarg, &aux_cfg, "CLI"); set.direction       = 1; break;
       case 'f': apply_field("fitness",         optarg, &aux_cfg, "CLI"); set.fitness         = 1; break;
       case 's': apply_field("selection",       optarg, &aux_cfg, "CLI"); set.selection       = 1; break;
       case 'x': apply_field("crossover",       optarg, &aux_cfg, "CLI"); set.crossover       = 1; break;
-      case 1000: apply_field("domain_min",     optarg, &aux_cfg, "CLI"); set.domain_min      = 1; break;
-      case 1001: apply_field("domain_max",     optarg, &aux_cfg, "CLI"); set.domain_max      = 1; break;
+      case 'm': apply_field("domain_min",      optarg, &aux_cfg, "CLI"); set.domain_min      = 1; break;
+      case 'M': apply_field("domain_max",      optarg, &aux_cfg, "CLI"); set.domain_max      = 1; break;
       case 'h':
         print_help(argv[0]);
         exit(EXIT_SUCCESS);
