@@ -16,13 +16,16 @@ int main(int argc, char **argv) {
 
   init(pop);
   wait_for_enter();
+  print_separator();
 
   for (int i = 0; i < g_cfg.generations; i++) {
-    printf("\n\nIteração %d\n", i);
+    print_generation_header(i);
     g_cfg.selection_fn(pop);
     wait_for_enter();
+    print_separator();
     iter_pop(pop);
     wait_for_enter();
+    print_separator();
   }
 
   free(pop);

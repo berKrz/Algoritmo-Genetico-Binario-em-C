@@ -1,6 +1,9 @@
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#define LINE_WIDTH 50
 
 void die(const char *msg) {
   fprintf(stderr, "Error: %s\n", msg);
@@ -23,44 +26,87 @@ void clear_screen(void) {
 }
 
 void wait_for_enter(void) {
-  printf("\n\nAperte [Enter] para continuar...\n");
+  if (!g_cfg.interactive) return;
+  printf("\n  [Enter para continuar...]\n");
   while (getchar() != '\n');
+}
+
+void print_separator(void) {
+  printf("\n");
+  for (int i = 0; i < LINE_WIDTH / 2; i++) printf("- ");
+  printf("\n\n");
+}
+
+void print_generation_header(int gen) {
+  char buf[32];
+  int  n = snprintf(buf, sizeof(buf), "=== Geracao %d ", gen);
+  printf("%s", buf);
+  for (int i = n; i < LINE_WIDTH; i++) printf("=");
+  printf("\n\n");
 }
 
 void print_ind(int *ind) {
   for (int i = g_cfg.ind_size - 1; i >= 0; i--) {
-    printf("[ %d ] ", ind[i]);
+    printf("[ %d ]", ind[i]);
   }
 }
 
 void print_pop(int *pop) {
+  // Find best individual
+  int    best_idx = 0;
+  double best_fit = g_cfg.fitness_fn(g_cfg.decode_fn(pop));
+  for (int i = 1; i < g_cfg.pop_size; i++) {
+    double f = g_cfg.fitness_fn(g_cfg.decode_fn(pop + i * g_cfg.ind_size));
+    if (g_cfg.direction == MINIMIZE ? f < best_fit : f > best_fit) {
+      best_fit = f;
+      best_idx = i;
+    }
+  }
+
   for (int i = 0; i < g_cfg.pop_size; i++) {
     double x = g_cfg.decode_fn(pop + i * g_cfg.ind_size);
-    printf("\nIndivíduo %d = ", i);
+    double f = g_cfg.fitness_fn(x);
+
+    if (i == best_idx)
+      printf(">> Individuo %d\n", i);
+    else
+      printf("   Individuo %d\n", i);
+
+    printf("     ");
     print_ind(pop + i * g_cfg.ind_size);
-    printf("\nx = %g, fitness(%d) = %g", x, i, g_cfg.fitness_fn(x));
     printf("\n");
+    printf("     x = %g   fitness = %g\n\n", x, f);
   }
-  printf("\n");
 }
 
 void print_pares(int *pop) {
-  printf("Pares Selecionados");
   for (int i = 0; i < g_cfg.pop_size; i++) {
-    double x = g_cfg.decode_fn(pop + i * g_cfg.ind_size);
-    printf("\n\nPar %d", i / 2);
-    printf("\nIndivíduo %d = ", i);
-    print_ind(pop + i * g_cfg.ind_size);
-    printf("x = %g, fitness(%d) = %g", x, i, g_cfg.fitness_fn(x));
+    int is_odd_last = (i == g_cfg.pop_size - 1) && (g_cfg.pop_size % 2 != 0);
 
-    if (i == g_cfg.pop_size - 1) {
+    if (is_odd_last)
+      printf("  Par %d  (sem par)\n", i / 2);
+    else
+      printf("  Par %d\n", i / 2);
+
+    double x = g_cfg.decode_fn(pop + i * g_cfg.ind_size);
+    printf("    Individuo %d\n", i);
+    printf("      ");
+    print_ind(pop + i * g_cfg.ind_size);
+    printf("\n");
+    printf("      x = %g   fitness = %g\n", x, g_cfg.fitness_fn(x));
+
+    if (is_odd_last) {
+      printf("\n");
       break;
     }
+
     ++i;
     x = g_cfg.decode_fn(pop + i * g_cfg.ind_size);
-    printf("\nIndivíduo %d = ", i);
+    printf("    Individuo %d\n", i);
+    printf("      ");
     print_ind(pop + i * g_cfg.ind_size);
-    printf("x = %g, fitness(%d) = %g", x, i, g_cfg.fitness_fn(x));
+    printf("\n");
+    printf("      x = %g   fitness = %g\n\n", x, g_cfg.fitness_fn(x));
   }
 }
 
@@ -70,7 +116,7 @@ void init(int *pop) {
       pop[i * g_cfg.ind_size + j] = rand() % 2;
     }
   }
-  printf("\nPopulação Inicial\n");
+  printf("Populacao Inicial\n\n");
   print_pop(pop);
 }
 

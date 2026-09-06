@@ -22,10 +22,12 @@ double fitness_quadratic(double x) {
 static void mutation(int *ind, int index) {
   for (int i = 0; i < g_cfg.ind_size; i++) {
     if ((float)rand() / RAND_MAX < g_cfg.mutation_rate) {
-      printf("\nMutação no indivíduo %d, bit %d\n", index, i);
+      printf("  Mutacao: individuo %d, bit %d\n", index, i);
+      printf("    antes:  ");
       print_ind(ind);
+      printf("\n");
       ind[i] = !ind[i];
-      printf("  ->  ");
+      printf("    depois: ");
       print_ind(ind);
       printf("\n");
     }
@@ -35,7 +37,7 @@ static void mutation(int *ind, int index) {
 void crossover_single_point(int *i1, int *i2) {
   int cut = (int)(g_cfg.ind_size * g_cfg.cut_point_ratio);
   for (int i = cut; i < g_cfg.ind_size; i++) {
-    // XOR Swap Values without temporary variable trick
+    // XOR swap without temporary variable
     i1[i] = i1[i] ^ i2[i];
     i2[i] = i2[i] ^ i1[i];
     i1[i] = i1[i] ^ i2[i];
@@ -49,7 +51,7 @@ void selection_roulette(int *pop) {
   double *fits = malloc(pop_size * sizeof(double));
   int    *aux  = malloc(pop_size * ind_size * sizeof(int));
 
-  printf("Roleta\n");
+  printf("Selecao: Roleta\n\n");
 
   for (int i = 0; i < pop_size; i++) {
     copy_ind(aux + i * ind_size, pop + i * ind_size);
@@ -95,12 +97,12 @@ void selection_roulette(int *pop) {
 void selection_tournament(int *pop) {
   int pop_size = g_cfg.pop_size;
   int ind_size = g_cfg.ind_size;
-  int k = g_cfg.tournament_size;
+  int k        = g_cfg.tournament_size;
 
   double *fits = malloc(pop_size * sizeof(double));
   int    *aux  = malloc(pop_size * ind_size * sizeof(int));
 
-  printf("Torneio\n");
+  printf("Selecao: Torneio\n\n");
 
   for (int i = 0; i < pop_size; i++) {
     copy_ind(aux + i * ind_size, pop + i * ind_size);
@@ -112,7 +114,6 @@ void selection_tournament(int *pop) {
 
     for (int j = 1; j < k; j++) {
       int challenger = rand() % pop_size;
-
       if (g_cfg.direction == MAXIMIZE) {
         if (fits[challenger] > fits[winner]) winner = challenger;
       } else {
@@ -136,7 +137,7 @@ void iter_pop(int *pop) {
     }
     mutation(pop + i * ind_size, i);
   }
-  printf("População Atual\n\n");
+  printf("Populacao Atual\n\n");
   print_pop(pop);
 }
 
@@ -146,6 +147,7 @@ Config config_default(void) {
     .ind_size        = 22,
     .generations     = 30,
     .tournament_size = 2,
+    .interactive     = 0,
     .cut_point_ratio = 0.6f,
     .mutation_rate   = 0.01f,
     .domain_min      = 0.0,

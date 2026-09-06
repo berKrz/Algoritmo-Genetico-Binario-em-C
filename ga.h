@@ -7,6 +7,7 @@ typedef struct {
   int          ind_size;
   int          generations;
   int          tournament_size;
+  int          interactive;
   float        cut_point_ratio;
   float        mutation_rate;
   double       domain_min;
