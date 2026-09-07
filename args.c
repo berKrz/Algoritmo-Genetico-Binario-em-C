@@ -9,23 +9,23 @@
 #include <getopt.h>
 
 static void print_help(const char *prog) {
-  printf("Usage: %s [OPTIONS]\n\n", prog);
-  printf("Options:\n");
-  printf("  -F, --config            FILE   Path to INI config file\n");
-  printf("  -p, --pop-size          INT    Population size (min: 2)            [default: 15]\n");
-  printf("  -i, --ind-size          INT    Individual size (min: 2)            [default: 22]\n");
-  printf("  -g, --generations       INT    Number of generations (min: 1)      [default: 30]\n");
-  printf("  -k, --tournament-size   INT    Number of individuals (min: 2)      [default: 2]\n");
-  printf("  -c, --cut-point         FLOAT  Crossover cut point ratio (0.0,1.0) [default: 0.6]\n");
-  printf("  -r, --mutation-rate     FLOAT  Mutation ratio [0.0,1.0)            [default: 0.01]\n");
-  printf("  -d, --direction         STR    minimize | maximize                 [default: minimize]\n");
-  printf("  -f, --fitness           STR    quadratic                           [default: quadratic]\n");
-  printf("  -s, --selection         STR    roulette | tournament               [default: roulette]\n");
-  printf("  -x, --crossover         STR    single-point                        [default: single-point]\n");
-  printf("  -m, --domain-min        FLOAT  Domain minimum value                [default: 0.0]\n");
-  printf("  -M, --domain-max        FLOAT  Domain maximum value                [default: 2^ind-size - 1]\n");
-  printf("  -I, --interactive              Run step-by-step with pauses\n");
-  printf("  -h, --help                     Print this message and exit\n");
+  printf("Uso: %s [OPCOES]\n\n", prog);
+  printf("Opcoes:\n");
+  printf("  -F, --config            ARQ    Caminho para arquivo de configuracao INI\n");
+  printf("  -p, --pop-size          INT    Tamanho da populacao (min: 2)            [padrao: 15]\n");
+  printf("  -i, --ind-size          INT    Tamanho do individuo (min: 2)            [padrao: 22]\n");
+  printf("  -g, --generations       INT    Numero de geracoes (min: 1)              [padrao: 30]\n");
+  printf("  -k, --tournament-size   INT    Individuos por torneio (min: 2)          [padrao: 2]\n");
+  printf("  -c, --cut-point         FLOAT  Razao do ponto de corte (0.0,1.0)        [padrao: 0.6]\n");
+  printf("  -r, --mutation-rate     FLOAT  Taxa de mutacao [0.0,1.0)                [padrao: 0.01]\n");
+  printf("  -d, --direction         STR    minimize | maximize                      [padrao: minimize]\n");
+  printf("  -f, --fitness           STR    quadratic                                [padrao: quadratic]\n");
+  printf("  -s, --selection         STR    roulette | tournament                    [padrao: roulette]\n");
+  printf("  -x, --crossover         STR    single-point                             [padrao: single-point]\n");
+  printf("  -m, --domain-min        FLOAT  Valor minimo do dominio                  [padrao: 0.0]\n");
+  printf("  -M, --domain-max        FLOAT  Valor maximo do dominio                  [padrao: 2^ind-size - 1]\n");
+  printf("  -I, --interactive              Executa passo a passo com pausas\n");
+  printf("  -h, --help                     Exibe esta mensagem e encerra\n");
 }
 
 void parse_args(int argc, char **argv) {
@@ -80,7 +80,7 @@ void parse_args(int argc, char **argv) {
         print_help(argv[0]);
         exit(EXIT_SUCCESS);
       default:
-        fprintf(stderr, "Run with --help for usage.\n");
+        fprintf(stderr, "Execute com --help para ver as opcoes.\n");
         exit(EXIT_FAILURE);
     }
   }
@@ -109,12 +109,12 @@ void parse_args(int argc, char **argv) {
 
   // Cross-field validation
   if (g_cfg.domain_min >= g_cfg.domain_max)
-    die("--domain-min must be strictly less than --domain-max.");
+    die("--domain-min deve ser estritamente menor que --domain-max.");
 
   if (g_cfg.tournament_size > g_cfg.pop_size) {
     char msg[128];
     snprintf(msg, sizeof(msg),
-             "--tournament-size must be at most pop-size (pop-size=%d)",
+             "--tournament-size deve ser no maximo pop-size (pop-size=%d).",
              g_cfg.pop_size);
     die(msg);
   }

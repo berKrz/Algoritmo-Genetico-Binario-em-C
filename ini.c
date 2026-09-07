@@ -20,7 +20,8 @@ void parse_ini(const char *filename, Config *dst) {
   FILE *f = fopen(filename, "r");
   if (!f) {
     char msg[256];
-    snprintf(msg, sizeof(msg), "cannot open config file '%s': %s",
+    snprintf(msg, sizeof(msg),
+             "nao foi possivel abrir o arquivo de configuracao '%s': %s",
              filename, strerror(errno));
     die(msg);
   }
@@ -40,7 +41,7 @@ void parse_ini(const char *filename, Config *dst) {
     if (!eq) {
       char source[128];
       snprintf(source, sizeof(source), "%s:%d", filename, linenum);
-      die_at(source, NULL, "expected 'key = value' format.");
+      die_at(source, NULL, "formato esperado: 'chave = valor'.");
     }
 
     *eq       = '\0';

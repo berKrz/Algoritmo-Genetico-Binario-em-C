@@ -4,17 +4,17 @@
 #include <string.h>
 
 void die(const char *msg) {
-  fprintf(stderr, "Error: %s\n", msg);
-  fprintf(stderr, "Run with --help for usage.\n");
+  fprintf(stderr, "Erro: %s\n", msg);
+  fprintf(stderr, "Execute com --help para ver as opcoes.\n");
   exit(EXIT_FAILURE);
 }
 
 void die_at(const char *source, const char *key, const char *msg) {
   if (key)
-    fprintf(stderr, "Error in '%s' [%s]: %s\n", source, key, msg);
+    fprintf(stderr, "Erro em '%s' [%s]: %s\n", source, key, msg);
   else
-    fprintf(stderr, "Error in '%s': %s\n", source, msg);
-  fprintf(stderr, "Run with --help for usage.\n");
+    fprintf(stderr, "Erro em '%s': %s\n", source, msg);
+  fprintf(stderr, "Execute com --help para ver as opcoes.\n");
   exit(EXIT_FAILURE);
 }
 

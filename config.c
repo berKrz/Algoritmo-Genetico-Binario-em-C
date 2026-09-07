@@ -32,46 +32,46 @@ static int g_domain_max_set = 0;
 
 static void handle_pop_size(const char *value, Config *dst, const char *source) {
   int v = atoi(value);
-  if (v < 2) die_at(source, "pop_size", "must be at least 2.");
+  if (v < 2) die_at(source, "pop_size", "deve ser pelo menos 2.");
   dst->pop_size = v;
 }
 
 static void handle_ind_size(const char *value, Config *dst, const char *source) {
   int v = atoi(value);
-  if (v < 2) die_at(source, "ind_size", "must be at least 2.");
+  if (v < 2) die_at(source, "ind_size", "deve ser pelo menos 2.");
   dst->ind_size = v;
 }
 
 static void handle_generations(const char *value, Config *dst, const char *source) {
   int v = atoi(value);
-  if (v < 1) die_at(source, "generations", "must be at least 1.");
+  if (v < 1) die_at(source, "generations", "deve ser pelo menos 1.");
   dst->generations = v;
 }
 
 static void handle_tournament_size(const char *value, Config *dst, const char *source) {
   int v = atoi(value);
-  if (v < 2) die_at(source, "tournament_size", "must be at least 2.");
+  if (v < 2) die_at(source, "tournament_size", "deve ser pelo menos 2.");
   dst->tournament_size = v;
 }
 
 static void handle_cut_point(const char *value, Config *dst, const char *source) {
   float v = (float)atof(value);
   if (v <= 0.0f || v >= 1.0f)
-    die_at(source, "cut_point", "must be in the open interval (0.0, 1.0).");
+    die_at(source, "cut_point", "deve estar no intervalo aberto (0.0, 1.0).");
   dst->cut_point_ratio = v;
 }
 
 static void handle_mutation_rate(const char *value, Config *dst, const char *source) {
   float v = (float)atof(value);
   if (v < 0.0f || v >= 1.0f)
-    die_at(source, "mutation_rate", "must be in the interval [0.0, 1.0).");
+    die_at(source, "mutation_rate", "deve estar no intervalo [0.0, 1.0).");
   dst->mutation_rate = v;
 }
 
 static void handle_direction(const char *value, Config *dst, const char *source) {
   if      (strcmp(value, "minimize") == 0) dst->direction = MINIMIZE;
   else if (strcmp(value, "maximize") == 0) dst->direction = MAXIMIZE;
-  else    die_at(source, "direction", "must be 'minimize' or 'maximize'.");
+  else    die_at(source, "direction", "deve ser 'minimize' ou 'maximize'.");
 }
 
 static void handle_fitness(const char *value, Config *dst, const char *source) {
@@ -81,7 +81,7 @@ static void handle_fitness(const char *value, Config *dst, const char *source) {
       return;
     }
   }
-  char msg[256] = "unknown fitness function. Available:";
+  char msg[256] = "funcao de fitness desconhecida. Disponiveis:";
   for (int i = 0; fitness_table[i].name != NULL; i++) {
     strncat(msg, " ", sizeof(msg) - strlen(msg) - 1);
     strncat(msg, fitness_table[i].name, sizeof(msg) - strlen(msg) - 1);
@@ -97,7 +97,7 @@ static void handle_selection(const char *value, Config *dst, const char *source)
       return;
     }
   }
-  char msg[256] = "unknown selection function. Available:";
+  char msg[256] = "funcao de selecao desconhecida. Disponiveis:";
   for (int i = 0; selection_table[i].name != NULL; i++) {
     strncat(msg, " ", sizeof(msg) - strlen(msg) - 1);
     strncat(msg, selection_table[i].name, sizeof(msg) - strlen(msg) - 1);
@@ -113,7 +113,7 @@ static void handle_crossover(const char *value, Config *dst, const char *source)
       return;
     }
   }
-  char msg[256] = "unknown crossover function. Available:";
+  char msg[256] = "funcao de crossover desconhecida. Disponiveis:";
   for (int i = 0; crossover_table[i].name != NULL; i++) {
     strncat(msg, " ", sizeof(msg) - strlen(msg) - 1);
     strncat(msg, crossover_table[i].name, sizeof(msg) - strlen(msg) - 1);
@@ -177,7 +177,7 @@ void apply_field(const char *key, const char *value, Config *dst, const char *so
   }
 
   char msg[128];
-  snprintf(msg, sizeof(msg), "unknown key '%s'.", key);
+  snprintf(msg, sizeof(msg), "chave desconhecida '%s'.", key);
   die_at(source, NULL, msg);
 }
 
