@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LINE_WIDTH 50
-
 void die(const char *msg) {
   fprintf(stderr, "Error: %s\n", msg);
   fprintf(stderr, "Run with --help for usage.\n");
@@ -51,8 +49,7 @@ void print_ind(int *ind) {
   }
 }
 
-void print_pop(int *pop) {
-  // Find best individual
+int find_best(int *pop) {
   int    best_idx = 0;
   double best_fit = g_cfg.fitness_fn(g_cfg.decode_fn(pop));
   for (int i = 1; i < g_cfg.pop_size; i++) {
@@ -62,6 +59,11 @@ void print_pop(int *pop) {
       best_idx = i;
     }
   }
+  return best_idx;
+}
+
+void print_pop(int *pop) {
+  int best_idx = find_best(pop);
 
   for (int i = 0; i < g_cfg.pop_size; i++) {
     double x = g_cfg.decode_fn(pop + i * g_cfg.ind_size);
