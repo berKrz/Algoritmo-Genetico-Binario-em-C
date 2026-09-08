@@ -1,6 +1,6 @@
-# Algoritmo Genetico Binario em C
+# Algoritmo Genético Binário em C
 
-Implementação de um algoritmo genético de representacao binária em C, com suporte a múltiplas funções de fitness, métodos de seleção, cruzamento, mutação e mapeamento de domínio contínuo. Totalmente configurável via argumentos de linha de comando ou arquivo INI.
+Implementação de um algoritmo genético de representação binária em C, com suporte a múltiplas funções de fitness, métodos de seleção, cruzamento, mutação e mapeamento de domínio contínuo. Totalmente configurável via argumentos de linha de comando ou arquivo INI.
 
 ---
 
