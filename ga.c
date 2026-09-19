@@ -148,6 +148,7 @@ Config config_default(void) {
     .generations     = 30,
     .tournament_size = 2,
     .interactive     = 0,
+    .out_file        = NULL,
     .cut_point_ratio = 0.6f,
     .mutation_rate   = 0.01f,
     .domain_min      = 0.0,

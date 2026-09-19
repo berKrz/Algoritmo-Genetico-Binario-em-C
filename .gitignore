@@ -1,5 +1,7 @@
 *.o
 agt
+*.csv
+*.png
 
 result
 result-*

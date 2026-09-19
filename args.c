@@ -24,6 +24,7 @@ static void print_help(const char *prog) {
   printf("  -x, --crossover         STR    single-point                             [padrao: single-point]\n");
   printf("  -m, --domain-min        FLOAT  Valor minimo do dominio                  [padrao: 0.0]\n");
   printf("  -M, --domain-max        FLOAT  Valor maximo do dominio                  [padrao: 2^ind-size - 1]\n");
+  printf("  -o, --out               ARQ    Arquivo CSV para registro do resultado\n");
   printf("  -I, --interactive              Executa passo a passo com pausas\n");
   printf("  -h, --help                     Exibe esta mensagem e encerra\n");
 }
@@ -43,6 +44,7 @@ void parse_args(int argc, char **argv) {
     { "crossover",       required_argument, NULL, 'x'  },
     { "domain-min",      required_argument, NULL, 'm'  },
     { "domain-max",      required_argument, NULL, 'M'  },
+    { "out",             required_argument, NULL, 'o'  },
     { "interactive",     no_argument,       NULL, 'I'  },
     { "help",            no_argument,       NULL, 'h'  },
     { NULL,              0,                 NULL,  0   }
@@ -60,7 +62,7 @@ void parse_args(int argc, char **argv) {
   const char *config_path = NULL;
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "F:p:i:g:k:c:r:d:f:s:x:m:M:Ih", long_opts, NULL)) != -1) {
+  while ((opt = getopt_long(argc, argv, "F:p:i:g:k:c:r:d:f:s:x:m:M:o:Ih", long_opts, NULL)) != -1) {
     switch (opt) {
       case 'F': config_path = optarg;                                                          break;
       case 'p': apply_field("pop_size",        optarg, &aux_cfg, "CLI"); set.pop_size        = 1; break;
@@ -75,6 +77,7 @@ void parse_args(int argc, char **argv) {
       case 'x': apply_field("crossover",       optarg, &aux_cfg, "CLI"); set.crossover       = 1; break;
       case 'm': apply_field("domain_min",      optarg, &aux_cfg, "CLI"); set.domain_min      = 1; break;
       case 'M': apply_field("domain_max",      optarg, &aux_cfg, "CLI"); set.domain_max      = 1; break;
+      case 'o': g_cfg.out_file  = optarg;                                                     break;
       case 'I': g_cfg.interactive = 1;                                                        break;
       case 'h':
         print_help(argv[0]);

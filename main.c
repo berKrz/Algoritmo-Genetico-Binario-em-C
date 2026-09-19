@@ -1,15 +1,18 @@
 #include "ga.h"
 #include "utils.h"
 #include "args.h"
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 int main(int argc, char **argv) {
   g_cfg = config_default();
   parse_args(argc, argv);
-
-  srand(time(NULL));
+  
+  // XOR com PID para garantir seed diferente, mesmo executado usando batch runs (run.sh)
+  srand((unsigned)time(NULL) ^ (unsigned)getpid());
   clear_screen();
 
   int *pop = malloc(g_cfg.pop_size * g_cfg.ind_size * sizeof(int));
@@ -55,6 +58,23 @@ int main(int argc, char **argv) {
   double last_fit = g_cfg.fitness_fn(last_x);
   double ever_x   = g_cfg.decode_fn(best_ever.ind);
   double ever_fit = g_cfg.fitness_fn(ever_x);
+
+  // Append one result row to CSV if --out was given
+  if (g_cfg.out_file) {
+    FILE *csv = fopen(g_cfg.out_file, "a");
+    if (!csv) {
+      char msg[256];
+      snprintf(msg, sizeof(msg),
+               "nao foi possivel abrir o arquivo CSV '%s'.", g_cfg.out_file);
+      die(msg);
+    }
+    fprintf(csv, "%s,%d,%d,%.17g\n",
+            selection_name_for(g_cfg.selection_fn),
+            g_cfg.pop_size,
+            g_cfg.generations,
+            last_fit);
+    fclose(csv);
+  }
 
   for (int i = 0; i < LINE_WIDTH; i++) printf("=");
   printf("\n");

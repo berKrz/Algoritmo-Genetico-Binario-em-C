@@ -8,6 +8,7 @@ typedef struct {
   int          generations;
   int          tournament_size;
   int          interactive;
+  char        *out_file;
   float        cut_point_ratio;
   float        mutation_rate;
   double       domain_min;

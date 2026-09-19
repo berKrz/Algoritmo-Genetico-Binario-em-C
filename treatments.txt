@@ -1,0 +1,19 @@
+# Cenarios para o teste de Friedman
+#
+#  A1
+-s tournament -p 15  -g 30
+
+#  A2
+-s roulette   -p 15  -g 30
+
+#  A3
+-s tournament -p 150 -g 30
+
+#  A4
+-s roulette   -p 150 -g 30
+
+#  A5
+-s tournament -p 15  -g 300
+
+#  A6
+-s roulette   -p 15  -g 300

@@ -184,3 +184,11 @@ void apply_field(const char *key, const char *value, Config *dst, const char *so
 int config_domain_max_was_set(void) {
   return g_domain_max_set;
 }
+
+/* --- Reverse Lookup on Tables --- */
+
+const char *selection_name_for(void (*fn)(int *)) {
+  for (int i = 0; selection_table[i].name != NULL; i++)
+    if (selection_table[i].fn == fn) return selection_table[i].name;
+  return "unknown";
+}

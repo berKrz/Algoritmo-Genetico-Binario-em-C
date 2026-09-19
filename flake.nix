@@ -14,6 +14,9 @@
           cmake          # build system — omit if not using it
           ninja          # fast build backend for cmake
           gdb            # debugger
+
+          R                    # interpreter
+          rPackages.PMCMRplus  # Nemenyi post-hoc test
         ];
       };
 
